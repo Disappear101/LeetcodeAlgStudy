@@ -10,7 +10,7 @@ Analysis method:
 	Optimization:
 	Space
 
-classical problem:
+Classical problem:
 
 01 Knapsack problem:
 	Given N items and their value w[N] and volume v[N].Find the max value with specified volume constrain m.
@@ -45,7 +45,7 @@ int f[N];
 for (int i = 1; i <= W.size(); i++)
 for (int j = m; i >= V[i]; j--)
 f[j] = max(f[j], f[j-V[i]]+W[i]);//right side belongs to i-1 layer and left side belongs to i layer.
-																//To make sure f[j-V[i]] from //last layer,we control j varying from big to small.
+				//To make sure f[j-V[i]] from //last layer,we control j varying from big to small.
 return f[m]; 
 
 Completed Knapsack problem:
@@ -79,8 +79,8 @@ Optimization:
 	int f[N];
 	for (int i = 1; i <= W.size(); i++)
 	for (int j = V[i]; i <= m; j++)
-	f[j] = max(f[j], f[j-V[i]] + W[i]);//different from Knapsack problem,here 	
-																		//uses i th f[j-V[i]],so it control j varying from small to big.
+	f[j] = max(f[j], f[j-V[i]] + W[i]);//different from Knapsack problem,here 													
+					//uses i th f[j-V[i]],so it control j varying from small to big.
 	Return f[m];
 
 Multiple Knapsack problem:
@@ -145,7 +145,8 @@ Interval DP:
 		parts to obtain the optimal value of the original problem.
 
 For example: Stone merger
-	There are N piles of stones S[N],every pile has one or more stones.To merge the piles to one pile,you can only merge adjacent piles every time.The cost is the number of stones in the adjacent piles.Find the smallest cost.
+	There are N piles of stones S[N],every pile has one or more stones.To merge the piles to one pile,you can only merge adjacent piles every time.
+	The cost is the number of stones in the adjacent piles.Find the smallest cost.
 Analysis:
 1.Finding the state representation
 	f[i][j] represents the set of all plans of merging piles in interval[i,j]. 
@@ -153,7 +154,8 @@ Analysis:
 2.Separating the set into multiple subsets and defining state equations.
 	Separating principle:
 	The set can be separated into multiple subsets based on the index of merging point(k).
-	The problem that find the lowest cost to merge piles in interval[i,j] is equivalent to the sum of the lowest cost in left interval [i,k] and the lowest cost in right interval[k+1,j] and add the prefix sum from i to j i.e:
+	The problem that find the lowest cost to merge piles in interval[i,j] is equivalent to the sum of the lowest cost in left interval [i,k] and the lowest cost
+	in right interval[k+1,j] and add the prefix sum from i to j i.e:
 	State equation:
 	f[i][j] = f[i][k] + f[k+1][j] + prefix_s[j]-prefix_s[i-1]
 	K is the merging point that is supposed to be enumerated.
@@ -220,5 +222,60 @@ for (int i = 1; i <= A.size(); i++)
 		if (A[i] == B[j])	f[i][j] = max(f[i][j],f[i-1][j-1] + 1);
 	}
 }
+
 return f[A.size()][B.size()];
 }
+
+
+Application scenario:
+Leetcode416:Partition Equal Subset Sum
+	This problem is equivalent to whether the container(with volume equal to sum / 2) can be filled by nums(with volume and 
+value equal to nums[i]),so it can be sovled by 01 Knapsack method.When the max value of container with volume sum/2 is equal to 
+sum/2,return true.
+	bool canPartition(vector<int>& nums) {
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+        if (sum % 2 != 0)   return false;
+        vector<int>dp((sum / 2) + 1, 0);
+        for (int i = 0; i < nums.size(); i++)
+        {
+            for (int j = sum / 2; j >= nums[i]; j--)
+                dp[j] = max(dp[j], dp[j - nums[i]] + nums[i]);
+        }
+        return (dp[sum / 2] == sum / 2);
+    }
+
+Leetcode1049:Last Stone Weight II
+	Analysis:we just need to separate the stones into two parts(they have the similarest sum) and then do subtracting
+	This problem is equivalent to find the max value of container with volume equal to sum/2,then output is equal to the 
+	difference between dp[sum/2] and sum - dp[sum/2]
+	int lastStoneWeightII(vector<int>& stones) {
+        	int sum = accumulate(stones.begin(), stones.end(), 0);
+        	vector<int>dp((sum / 2) + 1, 0);
+        	for (int i = 0; i < stones.size(); i++)
+            		for (int j = sum / 2; j >= stones[i]; j--)
+                		dp[j] = max(dp[j], dp[j - stones[i]] + stones[i]);
+        	return sum - 2*dp[sum/2];
+    }
+
+Leetcode494:Target Sum
+	Analysis:we need to separate nums into two parts that their difference is target,so there is :
+		p1sum - p2sum = target
+		pisum + p2sum = sum
+		Therefore,p1sum = (target + sum)/2,the problem becomes finding the numsber of ways that nums can fill the 
+		container with volume equal to (target + sum)/2.Meanwhile,the definition of dp[i] array becomes into that the 
+		container with volume j can be filled by dp[i] ways.
+	int findTargetSumWays(vector<int>& nums, int target) {
+        	if (nums.size() == 1 && nums[0] != abs(target)) return 0;
+        	int sum = accumulate(nums.begin(), nums.end(), 0);
+        	if ((sum + target) % 2 != 0 || sum + target < 0)    return 0;
+        	vector<int>dp((sum + target)/2 + 1);
+        	dp[0] = 1;
+        	for (int i = 0; i < nums.size(); i++)
+      		{
+            		for (int j = (sum + target)/2; j >= nums[i]; j--)
+            		{
+               		 dp[j] += dp[j - nums[i]]; 
+           		}
+        	}
+    	    	return dp[(sum + target)/2];
+    	}
