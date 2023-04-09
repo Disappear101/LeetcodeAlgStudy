@@ -262,8 +262,8 @@ Leetcode494:Target Sum
 		p1sum - p2sum = target
 		pisum + p2sum = sum
 		Therefore,p1sum = (target + sum)/2,the problem becomes finding the numsber of ways that nums can fill the 
-		container with volume equal to (target + sum)/2.Meanwhile,the definition of dp[i] array becomes into that the 
-		container with volume j can be filled by dp[i] ways.
+		container with volume equal to (target + sum)/2.Meanwhile,the definition of dp[j] array becomes into that the 
+		container with volume j can be filled by dp[j] ways and state equation becomes dp[j] += dp[j - nums[i]].
 	int findTargetSumWays(vector<int>& nums, int target) {
         	if (nums.size() == 1 && nums[0] != abs(target)) return 0;
         	int sum = accumulate(nums.begin(), nums.end(), 0);
@@ -279,3 +279,29 @@ Leetcode494:Target Sum
         	}
     	    	return dp[(sum + target)/2];
     	}
+
+Leetcode474: Ones and Zeroes
+	Analysis:comparing with 01 knapsack preblem,the difference is that the volume constrian becomes the constrians of number
+	of 0 and 1,so we have
+	to define 2d dp array dp[i][j] with meaning that the largest subset of strs such that there are at most i 0's and j 1's 
+	in the subset.State equation is dp[i][j] = max(dp[i][j], dp[i - x][j - y] + 1) with x, y being current str's numbers of 0
+	and 1.Every str has 1 value.
+	 int findMaxForm(vector<string>& strs, int m, int n) {
+        vector<int>tmp(n + 1, 0);
+        vector<vector<int>>dp(m + 1, tmp);
+        for (auto str : strs)
+        {
+            int x = 0, y = 0;
+            for (char ch : str)
+            {
+                if (ch == '0')  x++;
+                else            y++;
+            }
+            for (int i = m; i >= x; i--)
+                for (int j = n; j >= y; j--)
+                    dp[i][j] = max(dp[i][j], dp[i - x][j - y] + 1);
+        }
+        return dp[m][n];
+    }
+	
+	
