@@ -1,0 +1,224 @@
+Ⅴ.Dynamic Programming
+
+Analysis method:
+	First step:
+	Find the state representation including definition of state set and attribute(max/min/count). 
+	Second step:	
+	State calculation separate the state set into several subset,defining the state equation of every subset ,
+	handling subsets and combining the outcome of all subset then get the result.
+
+	Optimization:
+	Space
+
+classical problem:
+
+01 Knapsack problem:
+	Given N items and their value w[N] and volume v[N].Find the max value with specified volume constrain m.
+	Every item can only be used once.
+	
+	Analysis:
+	First step:find the state representation:
+		f(i,j) represents the set of all plans that first i items with volume being not exceeding j have.
+		Attribute is the max value.
+	Second step:state calculation
+		Separating the set into two subset based on whether choose i th item.
+		Don’t Choose:	f[i][j] = f[i-1][j]
+		Choose:		f[i][j] = f[i-1][j-v[i]] + w[i] 	when j >= v[i]
+	Coding:
+	int maxValue(vector<int> W, vector<int> V, int m){
+		Const int N = 1010;
+		int f[N][N];
+		for (int i = 1; i <= W.size(); i++)
+  	{
+			for (int j = 0; j <= m; j++)
+    	{
+				f[i][j] = f[i-1][j];
+				if (j >= v[i])	f[i][j] = max(f[i][j],f[i-1][j-V[i]] + W[i]);
+			}
+		}
+		return f[n][m];
+	}
+
+Optimization:
+Considering the space optimization
+int f[N];
+for (int i = 1; i <= W.size(); i++)
+for (int j = m; i >= V[i]; j--)
+f[j] = max(f[j], f[j-V[i]]+W[i]);//right side belongs to i-1 layer and left side belongs to i layer.
+																//To make sure f[j-V[i]] from //last layer,we control j varying from big to small.
+return f[m]; 
+
+Completed Knapsack problem:
+	The item can be used multiple times.
+	Analysis:
+	First step:
+		same as the Knapsack problem
+	Second step:
+		Separating the set into many subsets based on how many times the i th item is used.An item can be used
+			0,1,...,k,...,n times constrained by the targeting volume.
+			f[i][j]=max(f[i-1][j],f[i-1][j-v[i]]+w[i],f[i-1][j-2*v[i]]+2*w[i],...,f[i-1][j-k*v[i]]+k*w[i],... ).
+		Due to:
+			f[i][j-v[i]]=max(f[i-1][j-v[i]],f[i-1][j-2*v[i]]+w[i],...,f[i-1][j-k*v[i]]+(k-1)*w[i], ... );
+		So we can get state equation:
+			f[i][j] = max(f[i-1][j], f[i][j-v[i]]+w[i]);
+Coding:
+	int maxValue(vector<int> W, vector<int> V, int m){
+		Const int N = 1010;
+		int f[N][N];
+		for (int i = 1; i <= W.size(); i++)
+    {
+			for (int j = 0; j <= m; j++)
+       {
+					f[i][j] = f[i-1][j];
+					if (j >= v[i])	f[i][j] = max(f[i][j],f[i][j-V[i]] + W[i]);
+				}
+		}
+	return f[n][m];
+}
+Optimization:
+	int f[N];
+	for (int i = 1; i <= W.size(); i++)
+	for (int j = V[i]; i <= m; j++)
+	f[j] = max(f[j], f[j-V[i]] + W[i]);//different from Knapsack problem,here 	
+																		//uses i th f[j-V[i]],so it control j varying from small to big.
+	Return f[m];
+
+Multiple Knapsack problem:
+	The item i can be used s[i] times.
+Ananysis:
+	There will be one more cycle to enumerate the using times(1~s).It will increase the time complexity.
+	So there is a method to optimize this situation:
+		We make the problem be equivalent to 01 Knapsack problem,which is achieved by reconstructing the items pool,
+	putting s item i into items pool.So,the number of items becomes  the sumo f s.Undoubtedly,it still has a huge
+	time complexity,so we have to optimize the process of problem conversion by binary optimization method.
+	Binary optimization method:
+		every number within s[i] can be represented by a binary rule.For example:
+	If s[i] = 7,all number less than and equal to 7 can be presented by 1,2,4.
+	if s[i] = 10,all number less than and equal to 10 can be presented by 1,2,4,x.
+	x = 10-1-2-4 = 3.
+	So,10 item i is equivalent to four items with w = w[i]*(1/2/4/3),v = v[i]*(1/2/4/3).
+Coding:
+struct Good
+{
+    int v, w;
+};
+int main()
+{	
+cin >> n >> m;
+/*normal version
+for (int i = 1; i <= n; i++){
+Int v,w,s;
+cin << v << w << s;
+for (int j = m; j >= v; j--)
+for (int k = 1; k<=s&&k*v<=j; k++)
+            	f[j] = max(f[j], f[j-k*v] + k*w);
+}
+*/
+/*Binary optimization version
+    vector<Good> goods;
+    for (int i = 1; i <= n; i++)
+    {
+        int v, w, s;
+        cin >> v >> w >> s;
+        for (int k = 1; k <= s; k *= 2)
+        {
+            s -= k;
+            goods.push_back({v*k, w*k});
+        }
+        if (s > 0)
+            goods.push_back({v*s, w*s});
+    }
+    for (int i = 0; i < goods.size(); i++)
+        for (int j = m; j >= goods[i].v; j--)
+            f[j] = max(f[j], f[j-goods[i].v] + goods[i].w);
+    */        
+    cout<<f[m]<<endl;
+    return 0;
+}  
+
+Interval DP:
+	Interval DP has the following characteristics:
+	Merge : to integrate two or more parts, of course, it can also be reversed;
+	Features : can decompose the problem into a form that can be combined in pairs;
+	Solving : Set the optimal value for the entire problem, enumerate the merge points,
+		decompose the problem into left and right parts, and finally merge the optimal values of the two
+		parts to obtain the optimal value of the original problem.
+
+For example: Stone merger
+	There are N piles of stones S[N],every pile has one or more stones.To merge the piles to one pile,you can only merge adjacent piles every time.The cost is the number of stones in the adjacent piles.Find the smallest cost.
+Analysis:
+1.Finding the state representation
+	f[i][j] represents the set of all plans of merging piles in interval[i,j]. 
+	Attribute is the minimum of cost.
+2.Separating the set into multiple subsets and defining state equations.
+	Separating principle:
+	The set can be separated into multiple subsets based on the index of merging point(k).
+	The problem that find the lowest cost to merge piles in interval[i,j] is equivalent to the sum of the lowest cost in left interval [i,k] and the lowest cost in right interval[k+1,j] and add the prefix sum from i to j i.e:
+	State equation:
+	f[i][j] = f[i][k] + f[k+1][j] + prefix_s[j]-prefix_s[i-1]
+	K is the merging point that is supposed to be enumerated.
+Code:
+int minCost(vector<int> S){
+Const int N = 1010;
+int f[N][N];
+vector<int>prefix_s(S);
+for (int i = 1; i <= S.size(); i++)
+     prefix_s[i] += prefix_s[i-1];
+
+for (int len = 2; len <= S.size(); len++)//enumerate the interval length
+{
+	for (int i = 1; i + len - 1 <= S.size(); i++)
+   {
+			int j = len + i - 1;
+			f[i][j] = 1e8;
+			for (int k = i; k < j; k++)
+				f[i][j] = min(f[i][j], f[i][k] + f[k+1][j] + prefix_s[j]-prefix_s[i-1]);
+		}
+}
+return f[1][S.size()];
+}
+
+Longest common subsequence:
+	There are two strings A and B.Find the max length of the common subsequence.
+Analysis:
+1.Finding the state representation
+	f[i][j] represents the set of all common subsequences of A[1~i] and B[1~j]
+	Attribute is the maximum of common subsequence.
+2.Separating the set into multiple subsets and defining state equations.
+	Separating principle:
+	Based on that the longest common subsequence of A[1~i] and B[1~j] whether incorporate A[i],B[j],there are four subsets:
+	Both are not incorporated(00).
+		f[i][j] = f[i-1][j-1];
+	Only B[j] is incorporated(01).
+		f[i][j] = f[i-1][j];
+		According to the definition of set,f[i-1][j] not only cover the situation of only incorporating B[j] but also cover 
+		situation of incorporating none of them.Because 	we aim to find the max length,so f[i-1][j] works despite it generates 
+		overlapped 	calculation.
+	Only A[i] is incorporated(10)
+		f[i][j] = f[i][j-1];
+		According to the definition of set,f[i][j-1] not only cover the situation of only 	incorporating A[j] but also cover 
+		situation of incorporating none of them.Because 	we aim to find the max length,so f[i][j-1] works despite it generates
+		overlapped 	calculation.
+	Both are incorporated(11) 
+		f[i][j] = f[i-1][j-1]+1;
+		Meaning A[i] = B[j].
+
+Because f[i-1][j-1] is involved by f[i][j] = f[i-1][j-1] or f[i][j] = f[i][j-1].we get the state equation:
+	f[i][j] = max(f[i-1][j], f[i][j-1]);
+	f[i][j] = max(f[i][j], f[i-1][j-1]+1);	when A[i] = B[j]
+Coding:
+int maxLength(vector<int> A, vector<int> B){
+Const int N = 1010;
+A.push_front(0);
+B.push_front(0);
+int f[N][N];
+for (int i = 1; i <= A.size(); i++)
+{
+	for (int j = 1; j <= B.size(); j++)
+	{
+		f[i][j] = max(f[i-1][j], f[i][j-1]);
+		if (A[i] == B[j])	f[i][j] = max(f[i][j],f[i-1][j-1] + 1);
+	}
+}
+return f[A.size()][B.size()];
+}
