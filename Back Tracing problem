@@ -1,0 +1,51 @@
+Ⅳ.Back Tracking
+  When we use brute-force method to traverse all possible results and the layer of nested loop is changeable,
+  exploiting the back tracing control the layers of nested loop.
+  Application scenario:tree,combination,permutation,subset,segmentation,subsequence,checkerboard
+  Note:most cases need optimization(pruning)
+Analysis method:
+  1.build the tree data diagram
+  2.determine the arguments and return value of recursion function
+  3.Determine the return condition(void, bool, specified data type)
+  4.Define recursive logic of single layer
+  5.Pruning(optimization, Deduplication)
+For instance:
+  Leetcode40:
+
+Analysis:
+Tree data diagram:
+
+Cross means that current branch is supposed to prune
+
+    vector<int>path;//store all path
+    vector<vector<int>>res;//store valid path
+    void backTracing(int startIndex, int &sum, int tar, vector<int>& candidates, 	vector<bool>&used)
+    {
+        if (sum >= tar)
+        {
+            if (sum == tar)
+                res.push_back(path);
+            return;
+        }
+        for (int i = startIndex; i < candidates.size(); i++)
+        {
+            //pruning for deduplication
+            if (i > 0 && candidates[i] == candidates[i-1] && used[i-1] == 0)
+                continue;
+            path.push_back(candidates[i]);
+            sum += candidates[i];
+            used[i] = 1;
+            backTracing(i+1, sum, tar, candidates, used);
+            path.pop_back();
+            sum -= candidates[i];
+            used[i] = 0;
+        }
+
+    };
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        vector<bool>used(candidates.size(),0);
+        sort(candidates.begin(), candidates.end());
+        int sum = 0;
+        backTracing(0, sum, target, candidates, used);
+        return res;
+    }
