@@ -1,0 +1,22 @@
+Ⅴ.Greedy Algorithm
+  Local solution deduces the global solution. 
+  For instance:
+  Leetcode376:Wiggle subsequence
+    Local solution:when the prediff(previous number minus current number) is more than and equal to zero and 
+  curdiff(current number minus next number) is less than zero or prediff is less than and equal to zero and 
+  curdiff is more than zero,the number of wiggle subsequence increases by 1.
+  Traversing first n-1 number,we are about to get the global solution.
+  curdiff = nums[i+1] - nums[i];
+            if (prediff <= 0 && curdiff > 0 || prediff >= 0 && curdiff < 0)
+            {
+                res++;
+                prediff = curdiff;
+            }
+
+
+Leetcode 53:Maximum subarray
+Local solution:when the current accumulation is less than the current number,we drop the accumulation and restart accumulating from current number on,simultaneously recording the maximum value of accumulation.
+sum += nums[i];
+            if (sum < nums[i])
+                sum = nums[i];
+            res = max(res, sum);
